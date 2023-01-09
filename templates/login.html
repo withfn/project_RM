@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='/img/favicon.ico') }}" type="image/x-icon">
+    <link rel="stylesheet" href="{{ url_for('static', filename='/css/login.css') }}">
+    <title>Login</title>
+</head>
+
+<body>
+    <main>
+        <div id="img-logo"><img src="{{ url_for('static', filename='/img/logoFRSP.png') }}" alt=""></div>
+        <form action="" methods="POST">
+            <label for="user"><input type="text" name="user" id="user" placeholder="Usuário"></label>
+            <label for="password"><input type="password" name="password" id="password" placeholder="Senha"></label>
+            <button type="submit" id="btn-submit">Entrar</button>
+        </form>
+    </main>
+</body>
+
+</html>
