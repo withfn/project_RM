@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, flash, abort
+from flask import Flask, render_template, redirect, request, url_for, flash, abort
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
 import pymysql
@@ -101,7 +101,12 @@ def home():
         
     return render_template("index.html", peripherals=peripherals, manufacturer=get_manufacturer, state=get_state)
 
-
+@app.route("/edit/<int:peripheral_id>", methods=['GET', 'POST'])
+def edit_product(peripheral_id):
+    requested_post = Peripheral.query.get(peripheral_id)
+    if request.method == 'POST':
+        pass
+    return render_template("product_edit.html")
 
 
 
