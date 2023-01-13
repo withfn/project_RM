@@ -103,6 +103,8 @@ def home():
 
 @app.route("/new-peripheral", methods=['GET', 'POST'])
 def add_new_peripheral():
+    manufacturers = Manufacturer.query.all()
+    states = State.query.all()
     if request.method == 'POST':
         new_peripheral = Peripheral(
             name=request.form["name_peripheral"],
@@ -114,7 +116,7 @@ def add_new_peripheral():
         db.session.add(new_peripheral)
         db.session.commit()
         return redirect(url_for("home"))
-    return render_template("peripheral_edit.html")
+    return render_template("add_peripheral.html", manufacturers=manufacturers, states=states)
 
 
 @app.route("/edit/<int:peripheral_id>", methods=['GET', 'POST'])
@@ -128,7 +130,7 @@ def edit_peripheral(peripheral_id):
         peripheral.manufacturers_id = request.form["manufacturer"]
         peripheral.serial = request.form["serial"]
         peripheral.states_id = request.form["state"]
-        peripheral.date_mod = datetime.now().strftime("%Y-%m-%d %X")
+        peripheral.date_creation = datetime.now().strftime("%Y-%m-%d %X")
         db.session.commit()
         return redirect(url_for("home"))
     return render_template("peripheral_edit.html", peripheral=peripheral, manufacturers=manufacturers, states=states)
