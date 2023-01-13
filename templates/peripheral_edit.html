@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+
+<main class="col-8 m-auto">
+    <div class="card m-4 p-4">
+        <!-- {% set messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="alert alert-success" role="alert">
+                {% for msg in messages %}
+                    {{ msg }}
+                {% endfor %}
+            </div>
+        {% endif %} -->
+        <div class="d-flex justify-content-between">
+            <p class="h3"></p>
+            <form action="" method="post">
+                <a href="{{url_for('delete_peripheral', peripheral_id=peripheral.id)}}" class="btn btn-danger">Excluir</a>
+            </form>
+        </div>
+        <form method="POST" action="{{ edit_peripheral }}" name="edit_product" class="d-flex flex-column">
+            <label for="name_peripheral">Nome</label>
+            <input class="mb-3 col-12 form-control" type="text" name="name_peripheral" value="{{peripheral.name}}"
+                required>
+            <label for="manufacturer">Fabricante</label>
+            <select class="mb-3 col-12 form-control" name="manufacturer" aria-controls="table">
+                {% for manufacturer in manufacturers %}
+                    {% if manufacturer.id == peripheral.manufacturers_id %}
+                    <option value="{{manufacturer.id}}" selected>{{manufacturer.name}}</option>
+                    {% else %}
+                    <option value="{{manufacturer.id}}">
+                    {{manufacturer.name}}
+                    </option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+
+            <label for="serial">Serial</label>
+            <input class="mb-3 col-12 form-control" type="text" name="serial" value="{{peripheral.serial}}" required>
+            <label for="status">Estado</label>
+            <select class="mb-3 col-12 form-control" name="state" aria-controls="table">
+                {% for state in states %}
+                {% if state.id == peripheral.states_id %}
+                <option value="{{state.id}}" selected>{{state.name}}</option>
+                {% else %}
+                <option value="{{state.id}}">{{state.name}}
+                </option>
+                {% endif %}
+                {% endfor %}
+            </select>
+            <button class="btn btn-primary" type="submit">Atualizar</button>
+        </form>
+    </div>
+</main>
+
+{% endblock %}

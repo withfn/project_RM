@@ -2,6 +2,7 @@ from flask import Flask, render_template, redirect, request, url_for, flash, abo
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
 import pymysql
+from datetime import datetime
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
@@ -33,13 +34,13 @@ class Peripheral(db.Model):
     __tablename__ = "glpi_peripherals"
     id = db.Column(db.Integer, primary_key=True)
     
-    users_id = db.Column(db.Integer, db.ForeignKey("glpi_users"))
-    states_id = db.Column(db.Integer, db.ForeignKey("glpi_states"))
-    entities_id = db.Column(db.Integer, db.ForeignKey("glpi_entities"))
-    locations_id = db.Column(db.Integer, db.ForeignKey("glpi_locations"))
-    peripheraltypes_id = db.Column(db.Integer, db.ForeignKey("glpi_peripheraltypes"))
-    peripheralmodels_id = db.Column(db.Integer, db.ForeignKey("glpi_peripheralmodels"))
-    manufacturers_id = db.Column(db.Integer, db.ForeignKey("glpi_manufacturers"))
+    users_id = db.Column(db.Integer, db.ForeignKey("glpi_users.id"))
+    states_id = db.Column(db.Integer, db.ForeignKey("glpi_states.id"))
+    entities_id = db.Column(db.Integer, db.ForeignKey("glpi_entities.id"))
+    locations_id = db.Column(db.Integer, db.ForeignKey("glpi_locations.id"))
+    peripheraltypes_id = db.Column(db.Integer, db.ForeignKey("glpi_peripheraltypes.id"))
+    peripheralmodels_id = db.Column(db.Integer, db.ForeignKey("glpi_peripheralmodels.id"))
+    manufacturers_id = db.Column(db.Integer, db.ForeignKey("glpi_manufacturers.id"))
     
     name = db.Column(db.String(255), nullable=False)
     date_mod = db.Column(db.String(250))
@@ -87,6 +88,10 @@ class PeripheralType(db.Model):
 
 # db.create_all()
 
+#funcs
+def get_manufacturer(id): return Manufacturer.query.get(int(id))
+def get_state(id): return State.query.get(int(id))
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     return render_template("login.html")
@@ -94,19 +99,46 @@ def login():
 @app.route("/")
 def home():
     peripherals = Peripheral.query.all()
-    def get_manufacturer(id):
-        return Manufacturer.query.get(int(id))
-    def get_state(id):
-        return State.query.get(int(id))
-        
     return render_template("index.html", peripherals=peripherals, manufacturer=get_manufacturer, state=get_state)
 
-@app.route("/edit/<int:peripheral_id>", methods=['GET', 'POST'])
-def edit_product(peripheral_id):
-    requested_post = Peripheral.query.get(peripheral_id)
+@app.route("/new-peripheral", methods=['GET', 'POST'])
+def add_new_peripheral():
     if request.method == 'POST':
-        pass
-    return render_template("product_edit.html")
+        new_peripheral = Peripheral(
+            name=request.form["name_peripheral"],
+            manufacturers_id=request.form["manufacturer"],
+            serial=request.form["serial"],
+            states_id=request.form["state"],
+            date_creation=datetime.now().strftime("%Y-%m-%d %X")
+        )
+        db.session.add(new_peripheral)
+        db.session.commit()
+        return redirect(url_for("home"))
+    return render_template("peripheral_edit.html")
+
+
+@app.route("/edit/<int:peripheral_id>", methods=['GET', 'POST'])
+def edit_peripheral(peripheral_id):
+    peripheral = Peripheral.query.get(peripheral_id)
+    manufacturers = Manufacturer.query.all()
+    states = State.query.all()
+    
+    if request.method == 'POST':
+        peripheral.name = request.form["name_peripheral"]
+        peripheral.manufacturers_id = request.form["manufacturer"]
+        peripheral.serial = request.form["serial"]
+        peripheral.states_id = request.form["state"]
+        peripheral.date_mod = datetime.now().strftime("%Y-%m-%d %X")
+        db.session.commit()
+        return redirect(url_for("home"))
+    return render_template("peripheral_edit.html", peripheral=peripheral, manufacturers=manufacturers, states=states)
+
+@app.route("/delete/<int:peripheral_id>")
+def delete_peripheral(peripheral_id):
+    peripheral_to_delete = Peripheral.query.get(peripheral_id)
+    db.session.delete(peripheral_to_delete)
+    db.session.commit()
+    return redirect(url_for("home"))
 
 
 
