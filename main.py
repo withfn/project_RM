@@ -34,13 +34,14 @@ class Peripheral(db.Model):
     __tablename__ = "glpi_peripherals"
     id = db.Column(db.Integer, primary_key=True)
     
-    users_id = db.Column(db.Integer, db.ForeignKey("glpi_users.id"))
-    states_id = db.Column(db.Integer, db.ForeignKey("glpi_states.id"))
-    entities_id = db.Column(db.Integer, db.ForeignKey("glpi_entities.id"))
-    locations_id = db.Column(db.Integer, db.ForeignKey("glpi_locations.id"))
-    peripheraltypes_id = db.Column(db.Integer, db.ForeignKey("glpi_peripheraltypes.id"))
-    peripheralmodels_id = db.Column(db.Integer, db.ForeignKey("glpi_peripheralmodels.id"))
-    manufacturers_id = db.Column(db.Integer, db.ForeignKey("glpi_manufacturers.id"))
+    users_id = db.Column(db.Integer, db.ForeignKey("glpi_users.id"), default=0, nullable=False)
+    states_id = db.Column(db.Integer, db.ForeignKey("glpi_states.id"), default=0, nullable=False)
+    groups_id = db.Column(db.Integer, db.ForeignKey("glpi_groups.id"), default=0, nullable=False)
+    entities_id = db.Column(db.Integer, db.ForeignKey("glpi_entities.id"), default=0, nullable=False)
+    locations_id = db.Column(db.Integer, db.ForeignKey("glpi_locations.id"), default=0, nullable=False)
+    peripheraltypes_id = db.Column(db.Integer, db.ForeignKey("glpi_peripheraltypes.id"), default=0, nullable=False)
+    peripheralmodels_id = db.Column(db.Integer, db.ForeignKey("glpi_peripheralmodels.id"), default=0, nullable=False)
+    manufacturers_id = db.Column(db.Integer, db.ForeignKey("glpi_manufacturers.id"), default=0, nullable=False)
     
     name = db.Column(db.String(255), nullable=False)
     date_mod = db.Column(db.String(250))
@@ -50,6 +51,14 @@ class Peripheral(db.Model):
     serial = db.Column(db.String(255), nullable=False)
     otherserial = db.Column(db.String(255))
     is_deleted = db.Column(db.Integer, nullable=False)
+    is_dynamic = db.Column(db.Integer, default=0, nullable=False)
+    is_template = db.Column(db.Integer, default=0, nullable=False)
+    is_deleted = db.Column(db.Integer, default=0, nullable=False)
+    is_global = db.Column(db.Integer, default=0, nullable=False)
+    is_recursive = db.Column(db.Integer, default=0, nullable=False)
+    groups_id_tech = db.Column(db.Integer, default=0, nullable=False)
+    users_id_tech = db.Column(db.Integer, default=0, nullable=False)
+    
 
 class Manufacturer(db.Model):
     __tablename__ = "glpi_manufacturers"
@@ -96,27 +105,35 @@ def get_state(id): return State.query.get(int(id))
 def login():
     return render_template("login.html")
 
+ROWS_PER_PAGE = 10
+
 @app.route("/")
 def home():
-    peripherals = Peripheral.query.all()
+    page = request.args.get('page', 1, type=int)
+    
+    # peripherals = Peripheral.query.all()
+    peripherals = Peripheral.query.paginate(page=page, per_page=ROWS_PER_PAGE)
     return render_template("index.html", peripherals=peripherals, manufacturer=get_manufacturer, state=get_state)
 
 @app.route("/new-peripheral", methods=['GET', 'POST'])
 def add_new_peripheral():
     manufacturers = Manufacturer.query.all()
     states = State.query.all()
+    entities = Entitie.query.all()
     if request.method == 'POST':
         new_peripheral = Peripheral(
             name=request.form["name_peripheral"],
             manufacturers_id=request.form["manufacturer"],
             serial=request.form["serial"],
             states_id=request.form["state"],
+            entities_id=request.form["entitie"],
+            users_id=0,
             date_creation=datetime.now().strftime("%Y-%m-%d %X")
         )
         db.session.add(new_peripheral)
         db.session.commit()
         return redirect(url_for("home"))
-    return render_template("add_peripheral.html", manufacturers=manufacturers, states=states)
+    return render_template("add_peripheral.html", manufacturers=manufacturers, states=states, entities=entities)
 
 
 @app.route("/edit/<int:peripheral_id>", methods=['GET', 'POST'])
@@ -124,6 +141,7 @@ def edit_peripheral(peripheral_id):
     peripheral = Peripheral.query.get(peripheral_id)
     manufacturers = Manufacturer.query.all()
     states = State.query.all()
+    entities = Entitie.query.all()
     
     if request.method == 'POST':
         peripheral.name = request.form["name_peripheral"]
@@ -133,7 +151,7 @@ def edit_peripheral(peripheral_id):
         peripheral.date_creation = datetime.now().strftime("%Y-%m-%d %X")
         db.session.commit()
         return redirect(url_for("home"))
-    return render_template("peripheral_edit.html", peripheral=peripheral, manufacturers=manufacturers, states=states)
+    return render_template("peripheral_edit.html", peripheral=peripheral, manufacturers=manufacturers, states=states, entities=entities)
 
 @app.route("/delete/<int:peripheral_id>")
 def delete_peripheral(peripheral_id):

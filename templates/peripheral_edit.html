@@ -34,13 +34,24 @@
 
             <label for="serial">Serial</label>
             <input class="mb-3 col-12 form-control" type="text" name="serial" value="{{peripheral.serial}}" required>
-            <label for="status">Estado</label>
+            <label for="status">Status</label>
             <select class="mb-3 col-12 form-control" name="state" aria-controls="table">
                 {% for state in states %}
                 {% if state.id == peripheral.states_id %}
                 <option value="{{state.id}}" selected>{{state.name}}</option>
                 {% else %}
                 <option value="{{state.id}}">{{state.name}}
+                </option>
+                {% endif %}
+                {% endfor %}
+            </select>
+            <label for="status">Entidade</label>
+            <select class="mb-3 col-12 form-control" name="entitie" aria-controls="table">
+                {% for entitie in entities %}
+                {% if entitie.id == peripheral.entities_id %}
+                <option value="{{entitie.id}}" selected>{{entitie.name}}</option>
+                {% else %}
+                <option value="{{entitie.id}}">{{entitie.name}}
                 </option>
                 {% endif %}
                 {% endfor %}

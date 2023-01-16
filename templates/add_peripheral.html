@@ -29,7 +29,7 @@
 
             <label for="serial">Serial</label>
             <input class="mb-3 col-12 form-control" type="text" name="serial" value="" required>
-            <label for="status">Estado</label>
+            <label for="status">Status</label>
             <select class="mb-3 col-12 form-control" name="state" aria-controls="table">
                 <option value=""></option>
                 {% for state in states %}
@@ -37,7 +37,15 @@
                 </option>
                 {% endfor %}
             </select>
-            <button class="btn btn-primary" type="submit">Atualizar</button>
+            <label for="status">Entidade</label>
+            <select class="mb-3 col-12 form-control" name="entitie" aria-controls="table">
+                <option value=""></option>
+                {% for entitie in entities %}
+                <option value="{{entitie.id}}">{{entitie.name}}
+                </option>
+                {% endfor %}
+            </select>
+            <button class="btn btn-success" type="submit">Adicionar</button>
         </form>
     </div>
 </main>
