@@ -2,12 +2,20 @@ from flask import Flask, render_template, redirect, request, url_for, flash, abo
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
 import pymysql
+from werkzeug.utils import secure_filename
 from datetime import datetime
+import csv
+import os
+
+
+USER_MYSQL = 'root'
+PASSWORD_MYSQL = 'with0816'
+UPLOAD_FOLDER = os.path.join(os.getcwd(), 'upload')
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
 
-conn = "mysql+pymysql://root:with0816@127.0.0.1:3306/glpi"
+conn = f"mysql+pymysql://{USER_MYSQL}:{PASSWORD_MYSQL}@127.0.0.1:3306/glpi"
 
 app.config['SQLALCHEMY_DATABASE_URI'] = conn
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -105,7 +113,7 @@ def get_state(id): return State.query.get(int(id))
 def login():
     return render_template("login.html")
 
-ROWS_PER_PAGE = 10
+ROWS_PER_PAGE = 20
 
 @app.route("/")
 def home():
@@ -135,6 +143,30 @@ def add_new_peripheral():
         return redirect(url_for("home"))
     return render_template("add_peripheral.html", manufacturers=manufacturers, states=states, entities=entities)
 
+@app.route("/new-peripherals", methods=['GET', 'POST'])
+def add_new_peripherals():
+    file_csv = request.files['csv-file']
+    savePath = os.path.join(UPLOAD_FOLDER, secure_filename(file_csv.filename))
+    file_csv.save(savePath)
+    with open(savePath, 'r') as file:
+        next(file)
+        csvreader = csv.reader(file)
+        for row in csvreader:
+            new_peripheral = Peripheral(
+            name=row[0],
+            manufacturers_id=int(row[1]),
+            serial=row[2],
+            states_id=int(row[3]),
+            entities_id=int(row[4]),
+            users_id=0,
+            date_creation=datetime.now().strftime("%Y-%m-%d %X")
+        )
+            db.session.add(new_peripheral)
+            db.session.commit()
+    os.remove(savePath)
+    return redirect(url_for("home"))
+
+
 
 @app.route("/edit/<int:peripheral_id>", methods=['GET', 'POST'])
 def edit_peripheral(peripheral_id):
@@ -148,6 +180,7 @@ def edit_peripheral(peripheral_id):
         peripheral.manufacturers_id = request.form["manufacturer"]
         peripheral.serial = request.form["serial"]
         peripheral.states_id = request.form["state"]
+        peripheral.entities_id = request.form["entitie"]
         peripheral.date_creation = datetime.now().strftime("%Y-%m-%d %X")
         db.session.commit()
         return redirect(url_for("home"))
