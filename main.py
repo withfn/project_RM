@@ -9,7 +9,7 @@ import os
 
 
 USER_MYSQL = 'root'
-PASSWORD_MYSQL = 'with0816'
+PASSWORD_MYSQL = 'Soueu.0816'
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'upload')
 
 app = Flask(__name__)
@@ -148,7 +148,7 @@ def add_new_peripherals():
     file_csv = request.files['csv-file']
     savePath = os.path.join(UPLOAD_FOLDER, secure_filename(file_csv.filename))
     file_csv.save(savePath)
-    with open(savePath, 'r') as file:
+    with open(savePath, 'r', encoding="utf-8") as file:
         next(file)
         csvreader = csv.reader(file)
         for row in csvreader:
@@ -159,8 +159,10 @@ def add_new_peripherals():
             states_id=int(row[3]),
             entities_id=int(row[4]),
             users_id=0,
+            comment=(row[5]),
             date_creation=datetime.now().strftime("%Y-%m-%d %X")
         )
+
             db.session.add(new_peripheral)
             db.session.commit()
     os.remove(savePath)
